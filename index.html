@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MedAI - EHR Summary</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px auto;
+      max-width: 700px;
+      padding: 20px;
+    }
+    h2 {
+      text-align: left;
+    }
+    .upload-box {
+      border: 2px dashed #ccc;
+      padding: 30px;
+      text-align: center;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    .upload-box input {
+      display: none;
+    }
+    .output {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      min-height: 100px;
+    }
+    .button {
+      padding: 10px 20px;
+      background-color: black;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .button:disabled {
+      background-color: gray;
+    }
+  </style>
+</head>
+<body>
+  <h2>EHR Summary</h2>
+  <p>Upload electronic health records to generate concise, accurate summaries.</p>
+
+  <div class="upload-box">
+    <label for="fileInput">
+      <div style="font-size: 2em;">⬆</div>
+      <div><strong id="filenameLabel">No file selected</strong></div>
+      <p>Supports CSV or TXT format up to 10MB</p>
+    </label>
+    <input type="file" id="fileInput" />
+  </div>
+
+  <button class="button" id="submitBtn">Generate Summary</button>
+
+  <div class="output" id="summaryBox">Summary will appear here...</div>
+
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const filenameLabel = document.getElementById("filenameLabel");
+    const summaryBox = document.getElementById("summaryBox");
+    const submitBtn = document.getElementById("submitBtn");
+
+    // Show file name on selection
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files.length > 0) {
+        filenameLabel.textContent = fileInput.files[0].name;
+      } else {
+        filenameLabel.textContent = "No file selected";
+      }
+    });
+
+    submitBtn.addEventListener("click", async () => {
+      if (fileInput.files.length === 0) {
+        alert("Please select a file.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      summaryBox.textContent = "⏳ Generating summary...";
+
+      try {
+        const response = await fetch("http://localhost:8000/summarize_csv", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.summary) {
+          summaryBox.textContent = data.summary;
+        } else {
+          summaryBox.textContent = "❌ Error: " + (data.error || "Unknown issue");
+        }
+      } catch (err) {
+        summaryBox.textContent = "❌ Could not reach backend: " + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
