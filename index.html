@@ -76,6 +76,7 @@
       }
     });
 
+    // Use the live Render backend URL instead of localhost
     submitBtn.addEventListener("click", async () => {
       if (fileInput.files.length === 0) {
         alert("Please select a file.");
@@ -88,7 +89,7 @@
       summaryBox.textContent = "⏳ Generating summary...";
 
       try {
-        const response = await fetch("http://localhost:8000/summarize_csv", {
+        const response = await fetch("https://medai-backend-vf7d.onrender.com/summarize_csv", {
           method: "POST",
           body: formData
         });
